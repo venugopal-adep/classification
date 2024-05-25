@@ -12,6 +12,7 @@ st.set_page_config(page_title="Decision Tree vs Random Forest")
 
 # Title
 st.title("Decision Tree vs Random Forest")
+st.write('**Developed by : Venugopal Adep**')
 
 # Description
 st.write("This interactive application demonstrates the difference between decision trees and random forests using toy datasets.")
