@@ -37,6 +37,7 @@ def plot_data(X, y, regression_line, title):
 
 def main():
     st.title("Homoscedasticity Demonstration")
+    st.write('**Developed by : Venugopal Adep**')
     
     st.sidebar.header("Parameters")
     num_samples = st.sidebar.slider("Number of Samples", 50, 500, 100, 50)
