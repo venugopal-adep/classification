@@ -41,8 +41,7 @@ def main():
     X, y, data = load_dataset(dataset_name)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    st.subheader("Dataset")
-    st.write(data['DESCR'])
+
     st.write("Dataset shape:", X.shape)
     st.write("Target classes:", data['target_names'])
     
@@ -81,6 +80,8 @@ def main():
     
     st.subheader("Best Model")
     st.write(f"The best-performing model is: {best_model_name}")
+    st.subheader("Dataset")
+    st.write(data['DESCR'])
     
 if __name__ == "__main__":
     main()
