@@ -9,6 +9,7 @@ st.set_page_config(page_title="Gini Index Demonstration")
 
 # Title
 st.title("Gini Index Demonstration in Decision Trees")
+st.write('**Developed by : Venugopal Adep**')
 
 # Description
 st.write("This interactive program demonstrates how the Gini index is used in creating a decision tree.")
