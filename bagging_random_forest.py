@@ -20,6 +20,7 @@ def plot_decision_boundary(clf, X, y, title):
 
 def main():
     st.title("Bagging and Random Forest Demo")
+    st.write('**Developed by : Venugopal Adep**')
     
     st.sidebar.header("Interactive Demo")
     n_estimators = st.sidebar.slider("Number of Estimators", min_value=1, max_value=100, value=10, step=1)
