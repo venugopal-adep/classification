@@ -36,6 +36,7 @@ def plot_svm(X, y, svc):
 
 def main():
     st.title("Support Vector Machines (SVM) Interactive Tool")
+    st.write('**Developed by : Venugopal Adep**')
 
     # Explanation of SVM
     st.header("What are Support Vector Machines?")
