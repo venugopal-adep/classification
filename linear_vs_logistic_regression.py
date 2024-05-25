@@ -25,6 +25,7 @@ def plot_data(x, y, mode, title, color, fit_line=None, fit_color=None, threshold
     st.plotly_chart(fig)
 
 st.title('Exploring Linear and Logistic Regression')
+st.write('**Developed by : Venugopal Adep**')
 st.write('''
 This interactive demo lets you experiment with linear and logistic regression to see how they differ in fitting data.
 
