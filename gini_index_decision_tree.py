@@ -41,7 +41,7 @@ st.write("- $t$ is the current node")
 st.write("- $c$ is the number of classes")
 st.write("- $p_i$ is the proportion of samples belonging to class $i$ at node $t$")
 
-st.write("The Gini index ranges from 0 to 1, where 0 indicates a perfectly pure node (all samples belong to the same class) and 1 indicates an impure node (samples are evenly distributed among classes).")
+st.write("The Gini index ranges from 0 to 0.5, where 0 indicates a perfectly pure node (all samples belong to the same class) and 0.5 indicates an impure node (samples are evenly distributed among classes).")
 
 st.write("At each node, the decision tree algorithm selects the feature and split point that minimizes the weighted average of the Gini index of the child nodes. This process is repeated recursively until a stopping criterion is met, such as reaching the maximum depth or having a minimum number of samples in a leaf node.")
 
