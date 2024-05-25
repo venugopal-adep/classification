@@ -9,6 +9,7 @@ st.set_page_config(page_title="Entropy Demonstration")
 
 # Title
 st.title("Entropy Demonstration in Decision Trees")
+st.write('**Developed by : Venugopal Adep**')
 
 # Description
 st.write("This interactive program demonstrates how entropy is used in creating a decision tree.")
