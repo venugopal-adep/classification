@@ -34,6 +34,7 @@ def evaluate_model(model, X_test, y_test):
 
 def main():
     st.title("AutoML Classification App")
+    st.write('**Developed by : Venugopal Adep**')
     
     dataset_name = st.sidebar.selectbox("Select Dataset", ("Iris", "Breast Cancer", "Wine", "Digits"))
     
