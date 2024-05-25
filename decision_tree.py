@@ -15,6 +15,7 @@ def plot_decision_tree(clf, feature_names, class_names):
 
 def main():
     st.title("Decision Tree Interactive Tool")
+    st.write('**Developed by : Venugopal Adep**')
 
     # Explanation of Decision Trees
     st.header("What are Decision Trees?")
