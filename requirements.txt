@@ -8,3 +8,4 @@ statsmodels
 tensorflow
 xgboost
 catboost
+imblearn
