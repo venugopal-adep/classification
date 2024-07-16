@@ -9,3 +9,4 @@ tensorflow
 xgboost
 catboost
 imblearn
+shap
