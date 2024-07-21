@@ -8,6 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.tree import plot_tree
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # Set page config
 st.set_page_config(layout="wide", page_title="Decision Tree Explorer", page_icon="🌳")
