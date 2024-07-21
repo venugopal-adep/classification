@@ -68,7 +68,7 @@ st.markdown("""
 # Title
 st.markdown("<h1 class='main-header'>📊 Linear vs Logistic Regression Explorer 📊</h1>", unsafe_allow_html=True)
 
-# Functions (same as before)
+# Functions
 def generate_data(num_points, noise_level, logistic_x_shift):
     x = np.random.uniform(-5, 5, num_points)
     y_linear = 2*x + np.random.normal(0, noise_level, num_points)
@@ -91,7 +91,105 @@ def plot_data(x, y, mode, title, color, fit_line=None, fit_color=None, threshold
 # Create tabs
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Visualization", "🧮 Interactive Calculator", "🎓 Learn More", "🧠 Quiz"])
 
-# Tab 1, 2, 3 content remains the same as in the previous version
+with tab1:
+    st.markdown("<h2 class='tab-subheader'>Linear and Logistic Regression Visualization</h2>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        st.markdown("<p class='content-text'>Adjust parameters to see how they affect the regressions:</p>", unsafe_allow_html=True)
+        
+        num_points = st.slider('Number of data points', 10, 100, 30)
+        noise_level = st.slider('Noise level', 0.0, 2.0, 0.5)
+        logistic_x_shift = st.slider('Logistic curve shift', -5.0, 5.0, 0.0)
+        threshold = st.slider('Decision Threshold', 0.0, 1.0, 0.5)
+        
+        x, y_linear, y_logistic = generate_data(num_points, noise_level, logistic_x_shift)
+        
+    with col2:
+        # Linear Regression
+        p = np.polyfit(x, y_linear, 1)
+        y_linear_pred = p[0]*x + p[1]
+        fig_linear = plot_data(x, y_linear, 'markers', 'Linear Regression', 'blue', y_linear_pred, 'red')
+        st.plotly_chart(fig_linear, use_container_width=True)
+        
+        st.markdown("<div class='highlight'>", unsafe_allow_html=True)
+        st.write(f"Linear Regression - Slope: {p[0]:.2f}, Intercept: {p[1]:.2f}")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Logistic Regression
+        model = LogisticRegression(random_state=0).fit(x.reshape(-1, 1), y_logistic)
+        x_logistic_pred = np.linspace(x.min(), x.max(), 100)
+        y_logistic_pred = model.predict_proba(x_logistic_pred.reshape(-1, 1))[:,1]
+        fig_logistic = plot_data(x_logistic_pred, y_logistic_pred, 'lines', 'Logistic Regression', 'orange', threshold=threshold)
+        fig_logistic.add_trace(go.Scatter(x=x, y=y_logistic, mode='markers', marker=dict(color='green')))
+        st.plotly_chart(fig_logistic, use_container_width=True)
+        
+        st.markdown("<div class='highlight'>", unsafe_allow_html=True)
+        st.write(f"Logistic Regression - Decision Threshold: {threshold:.2f}")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+with tab2:
+    st.markdown("<h2 class='tab-subheader'>Interactive Regression Calculator</h2>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        st.markdown("<p class='content-text'>Enter your own data points:</p>", unsafe_allow_html=True)
+        
+        data_input = st.text_area("Enter x,y pairs (one per line):", "1,2\n2,4\n3,5\n4,4\n5,6")
+        regression_type = st.radio("Select regression type:", ["Linear", "Logistic"])
+        
+        if st.button("Calculate Regression"):
+            try:
+                data = np.array([list(map(float, line.split(','))) for line in data_input.split('\n')])
+                x = data[:, 0]
+                y = data[:, 1]
+                
+                if regression_type == "Linear":
+                    p = np.polyfit(x, y, 1)
+                    y_pred = p[0]*x + p[1]
+                    st.markdown("<div class='highlight'>", unsafe_allow_html=True)
+                    st.write(f"Linear Regression Results:")
+                    st.write(f"Slope: {p[0]:.2f}")
+                    st.write(f"Intercept: {p[1]:.2f}")
+                    st.write(f"Equation: y = {p[0]:.2f}x + {p[1]:.2f}")
+                    st.markdown("</div>", unsafe_allow_html=True)
+                else:
+                    model = LogisticRegression(random_state=0).fit(x.reshape(-1, 1), y)
+                    y_pred = model.predict_proba(x.reshape(-1, 1))[:,1]
+                    st.markdown("<div class='highlight'>", unsafe_allow_html=True)
+                    st.write(f"Logistic Regression Results:")
+                    st.write(f"Coefficient: {model.coef_[0][0]:.2f}")
+                    st.write(f"Intercept: {model.intercept_[0]:.2f}")
+                    st.markdown("</div>", unsafe_allow_html=True)
+                
+                fig = plot_data(x, y, 'markers', f'{regression_type} Regression', 'blue', y_pred, 'red')
+                st.plotly_chart(fig, use_container_width=True)
+                
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
+
+with tab3:
+    st.markdown("<h2 class='tab-subheader'>Learn More About Regression</h2>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <p class='content-text'>
+    <b>Linear Regression:</b> Used when the dependent variable is continuous. It fits a straight line to model the relationship between the independent and dependent variables.
+    
+    <b>Example:</b> Predicting a student's test score based on the number of hours they studied.
+    
+    <b>Logistic Regression:</b> Used when the dependent variable is categorical, typically binary (0 or 1). It fits a sigmoidal curve to model the probability that the dependent variable equals 1, given the independent variable.
+    
+    <b>Example:</b> Predicting whether a customer will buy a product or not based on their age.
+    
+    Key differences:
+    1. Output: Linear regression predicts continuous values, while logistic regression predicts probabilities.
+    2. Function: Linear regression uses a linear equation, while logistic regression uses the logistic function.
+    3. Assumptions: Linear regression assumes a linear relationship, while logistic regression doesn't.
+    4. Applications: Linear regression is used for prediction and forecasting, while logistic regression is used for classification tasks.
+    </p>
+    """, unsafe_allow_html=True)
 
 with tab4:
     st.markdown("<h2 class='tab-subheader'>Test Your Regression Knowledge 🧠</h2>", unsafe_allow_html=True)
@@ -170,44 +268,4 @@ with tab4:
         st.markdown("---")
 
     if st.button("Show Final Score"):
-        st.markdown(f"<p class='tab-subheader'>Your score: {score}/{len(questions)}</p>", unsafe_allow_html=True)
-        if score == len(questions):
-            st.balloons()
-            st.markdown("<p class='content-text' style='color: green; font-weight: bold;'>Congratulations! You're a regression expert! 🏆</p>", unsafe_allow_html=True)
-        elif score >= len(questions) // 2:
-            st.markdown("<p class='content-text' style='color: blue;'>Good job! You're on your way to mastering regression concepts. Keep learning! 📚</p>", unsafe_allow_html=True)
-        else:
-            st.markdown("<p class='content-text' style='color: orange;'>You're making progress! Review the explanations and try again to improve your score. 💪</p>", unsafe_allow_html=True)
-
-        # Visualization of score
-        fig = go.Figure(go.Indicator(
-            mode = "gauge+number",
-            value = score,
-            domain = {'x': [0, 1], 'y': [0, 1]},
-            title = {'text': "Quiz Score"},
-            gauge = {
-                'axis': {'range': [None, len(questions)]},
-                'steps': [
-                    {'range': [0, len(questions)//2], 'color': "lightgray"},
-                    {'range': [len(questions)//2, len(questions)], 'color': "gray"}],
-                'threshold': {
-                    'line': {'color': "red", 'width': 4},
-                    'thickness': 0.75,
-                    'value': score}}))
-        st.plotly_chart(fig, use_container_width=True)
-
-# Conclusion
-st.markdown("<h2 class='tab-subheader'>Happy Exploring! 🎊</h2>", unsafe_allow_html=True)
-st.markdown("""
-<p class='content-text'>
-You've explored the world of linear and logistic regression! Remember:
-
-1. Linear regression helps predict continuous outcomes.
-2. Logistic regression is great for binary classification problems.
-3. The choice between them depends on your specific problem and data.
-4. Visualizing the data and regression lines helps in understanding the relationships.
-5. Always consider the assumptions and limitations of each method.
-
-Keep exploring and applying these regression techniques in your data analysis journey!
-</p>
-""", unsafe_allow_html=True)
+        st.markdown(f"<p class='tab-subheader'>Your score: {score}/{len(questions)}</p>", unsafe_allow)
