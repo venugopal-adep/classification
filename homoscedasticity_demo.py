@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
 from scipy.stats import f
 from sklearn.linear_model import LinearRegression
 from statsmodels.stats.diagnostic import het_breuschpagan
@@ -13,10 +14,10 @@ st.set_page_config(page_title="Homoscedasticity Explorer", layout="wide", initia
 st.markdown("""
 <style>
 .stApp {
-    background-color: #f0f2f6;
+    background-color: #f0f8ff;
 }
 .stButton>button {
-    background-color: #4CAF50;
+    background-color: #4b0082;
     color: white;
 }
 .stTabs [data-baseweb="tab-list"] {
@@ -25,15 +26,21 @@ st.markdown("""
 .stTabs [data-baseweb="tab"] {
     height: 50px;
     white-space: pre-wrap;
-    background-color: #e6e6e6;
+    background-color: #e6e6fa;
     border-radius: 4px 4px 0 0;
     gap: 1px;
     padding-top: 10px;
     padding-bottom: 10px;
 }
 .stTabs [aria-selected="true"] {
-    background-color: #4CAF50;
+    background-color: #8a2be2;
     color: white;
+}
+.highlight {
+    background-color: #e6e6fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -44,12 +51,13 @@ st.markdown("**Developed by: Venugopal Adep**")
 st.markdown("Discover the impact of homoscedasticity on linear regression!")
 
 # Helper functions
+@st.cache_data
 def generate_data(num_samples, homoscedastic=True):
     X = np.random.rand(num_samples, 1)
     if homoscedastic:
         noise = np.random.normal(0, 0.1, num_samples)
     else:
-        noise = np.random.normal(0, X.flatten(), num_samples)
+        noise = np.random.normal(0, X.flatten() * 0.5, num_samples)
     y = 2 * X.flatten() + 1 + noise
     return X, y
 
@@ -70,10 +78,8 @@ def goldfeld_quandt_test(X, y):
     return f_value, p_value
 
 def plot_data(X, y, regression_line, title):
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=X.flatten(), y=y, mode='markers', name='Data'))
+    fig = px.scatter(x=X.flatten(), y=y, labels={'x': 'X', 'y': 'y'}, title=title)
     fig.add_trace(go.Scatter(x=X.flatten(), y=regression_line, mode='lines', name='Regression Line'))
-    fig.update_layout(title=title, xaxis_title='X', yaxis_title='y')
     return fig
 
 # Sidebar
@@ -91,23 +97,60 @@ model.fit(X, y)
 regression_line = model.predict(X)
 
 # Main content
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Visualization", "🧮 Test Results", "🧠 Quiz", "📚 Learn More"])
+tab1, tab2, tab3, tab4 = st.tabs(["📚 Learn", "📊 Visualization", "🧮 Test Results", "🧠 Quiz"])
 
 with tab1:
-    st.header("Data Visualization")
+    st.header("📚 Learn About Homoscedasticity")
+    
+    st.markdown("""
+    <div class="highlight">
+    <h3>What is Homoscedasticity?</h3>
+    <p>Homoscedasticity is a key assumption in linear regression. It means that the variance of the residuals (the differences between observed and predicted values) is constant across all levels of the independent variables.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="highlight">
+    <h3>Why is Homoscedasticity Important?</h3>
+    <ul>
+        <li>Ensures the reliability of regression estimates</li>
+        <li>Allows for accurate hypothesis testing</li>
+        <li>Helps in creating valid confidence intervals</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="highlight">
+    <h3>What Happens When Data is Heteroscedastic?</h3>
+    <ul>
+        <li>Standard errors of coefficients may be biased</li>
+        <li>Hypothesis tests may be unreliable</li>
+        <li>Confidence intervals may be too wide or too narrow</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+with tab2:
+    st.header("📊 Data Visualization")
+    
     fig = plot_data(X, y, regression_line, data_type + " Data")
     st.plotly_chart(fig, use_container_width=True)
 
     # Residual plot
     residuals = y - regression_line
-    fig_residuals = go.Figure()
-    fig_residuals.add_trace(go.Scatter(x=X.flatten(), y=residuals, mode='markers', name='Residuals'))
+    fig_residuals = px.scatter(x=X.flatten(), y=residuals, labels={'x': 'X', 'y': 'Residuals'}, title="Residual Plot")
     fig_residuals.add_hline(y=0, line_dash="dash", line_color="red")
-    fig_residuals.update_layout(title="Residual Plot", xaxis_title='X', yaxis_title='Residuals')
     st.plotly_chart(fig_residuals, use_container_width=True)
+    
+    st.markdown("""
+    <div class="highlight">
+    <p>In the residual plot, look for patterns. A random scatter indicates homoscedasticity, while a fan or funnel shape suggests heteroscedasticity.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-with tab2:
-    st.header("Homoscedasticity Test Results")
+with tab3:
+    st.header("🧮 Homoscedasticity Test Results")
 
     # Goldfeld-Quandt Test
     f_value, p_value = goldfeld_quandt_test(X, y)
@@ -132,42 +175,48 @@ with tab2:
     else:
         st.success("Fail to reject the null hypothesis. The residuals are homoscedastic.")
 
-with tab3:
-    st.header("Test Your Knowledge")
+    st.markdown("""
+    <div class="highlight">
+    <p>Both tests check for heteroscedasticity. A p-value less than 0.05 suggests the presence of heteroscedasticity.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with tab4:
+    st.header("🧠 Test Your Knowledge")
     
     questions = [
         {
-            "question": "What is homoscedasticity?",
+            "question": "What does homoscedasticity mean?",
             "options": [
-                "Equal variances of residuals across all levels of predictors",
-                "Unequal variances of residuals across all levels of predictors",
-                "Equal means of residuals across all levels of predictors",
-                "Linear relationship between variables"
+                "The variance of residuals is constant",
+                "The mean of residuals is constant",
+                "The data is normally distributed",
+                "The relationship between variables is linear"
             ],
             "correct": 0,
-            "explanation": "Homoscedasticity refers to the condition where the variance of the residuals is constant across all levels of the independent variables."
-        },
-        {
-            "question": "What is the consequence of heteroscedasticity in linear regression?",
-            "options": [
-                "Biased coefficient estimates",
-                "Inefficient coefficient estimates",
-                "Biased standard errors",
-                "All of the above"
-            ],
-            "correct": 2,
-            "explanation": "Heteroscedasticity primarily affects the standard errors of the coefficient estimates, making them biased. This can lead to incorrect inferences about the significance of predictors."
+            "explanation": "Homoscedasticity means that the variance of the residuals is constant across all levels of the independent variables."
         },
         {
             "question": "Which plot is most useful for detecting heteroscedasticity?",
             "options": [
                 "Scatter plot of X vs Y",
-                "Histogram of residuals",
-                "Q-Q plot of residuals",
-                "Residual plot (fitted values vs residuals)"
+                "Histogram of Y",
+                "Residual plot",
+                "Box plot of X"
             ],
-            "correct": 3,
-            "explanation": "A residual plot, which shows the relationship between fitted values and residuals, is most useful for detecting heteroscedasticity. A fan-shaped pattern in this plot often indicates heteroscedasticity."
+            "correct": 2,
+            "explanation": "A residual plot, which shows predicted values vs residuals, is most useful for detecting heteroscedasticity. A fan or funnel shape in this plot often indicates heteroscedasticity."
+        },
+        {
+            "question": "What should you look for in a residual plot to indicate homoscedasticity?",
+            "options": [
+                "A clear pattern",
+                "A random scatter of points",
+                "A straight line",
+                "A normal distribution curve"
+            ],
+            "correct": 1,
+            "explanation": "In a residual plot, a random scatter of points with no clear pattern indicates homoscedasticity."
         }
     ]
     
@@ -177,33 +226,11 @@ with tab3:
         
         if st.button(f"Check Answer for Question {i+1}", key=f"check{i}"):
             if q['options'].index(user_answer) == q['correct']:
-                st.success("Correct!")
+                st.success("Correct! Well done!")
             else:
-                st.error("Incorrect. Try again!")
-            st.write(f"Explanation: {q['explanation']}")
+                st.error("Not quite right. Let's learn from this!")
+            st.info(f"Explanation: {q['explanation']}")
         st.write("---")
-
-with tab4:
-    st.header("Learn More About Homoscedasticity")
-    st.markdown("""
-    Homoscedasticity is an important assumption in linear regression that refers to the constant variance of the residuals across all levels of the independent variables.
-
-    Key concepts:
-    1. **Homoscedasticity**: The variance of residuals is constant across all levels of the independent variables.
-    2. **Heteroscedasticity**: The variance of residuals varies across levels of the independent variables.
-    3. **Consequences**: Heteroscedasticity can lead to biased standard errors, affecting hypothesis tests and confidence intervals.
-
-    Detecting heteroscedasticity:
-    1. **Visual methods**: Residual plots, scale-location plots
-    2. **Statistical tests**: Breusch-Pagan test, White test, Goldfeld-Quandt test
-
-    Dealing with heteroscedasticity:
-    1. **Transformation**: Log or square root transformation of the dependent variable
-    2. **Weighted Least Squares**: Giving less weight to observations with higher variance
-    3. **Robust standard errors**: Using methods that are less sensitive to heteroscedasticity
-
-    Remember, while homoscedasticity is an important assumption, minor violations may not severely impact your analysis. It's important to consider the practical significance of any heteroscedasticity detected in your data.
-    """)
 
 st.sidebar.markdown("---")
 st.sidebar.info("This app demonstrates the concept of homoscedasticity in linear regression. Adjust the parameters and explore the different tabs to learn more!")
