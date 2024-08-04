@@ -253,37 +253,37 @@ with tabs[4]:
     # Hyperparameter ranges
     if model_name == "Decision Tree":
         param_grid = {
-            'max_depth': st.slider("Maximum tree depth", 1, 20, (1, 10)),
-            'min_samples_split': st.slider("Minimum samples to split", 2, 20, (2, 10)),
-            'min_samples_leaf': st.slider("Minimum samples in leaf", 1, 20, (1, 5))
+            'max_depth': st.multiselect("Maximum tree depth", options=list(range(1, 21)), default=[1, 5, 10]),
+            'min_samples_split': st.multiselect("Minimum samples to split", options=list(range(2, 21)), default=[2, 5, 10]),
+            'min_samples_leaf': st.multiselect("Minimum samples in leaf", options=list(range(1, 21)), default=[1, 2, 5])
         }
         model = DecisionTreeClassifier(random_state=42)
     elif model_name == "Random Forest":
         param_grid = {
-            'n_estimators': st.slider("Number of trees", 10, 200, (10, 100)),
-            'max_depth': st.slider("Maximum tree depth", 1, 20, (1, 10)),
-            'min_samples_split': st.slider("Minimum samples to split", 2, 20, (2, 10))
+            'n_estimators': st.multiselect("Number of trees", options=list(range(10, 201, 10)), default=[10, 50, 100]),
+            'max_depth': st.multiselect("Maximum tree depth", options=list(range(1, 21)), default=[1, 5, 10]),
+            'min_samples_split': st.multiselect("Minimum samples to split", options=list(range(2, 21)), default=[2, 5, 10])
         }
         model = RandomForestClassifier(random_state=42)
     elif model_name == "Support Vector Machine":
         param_grid = {
-            'C': st.select_slider("Regularization parameter (C)", options=[0.1, 1, 10, 100], value=1),
-            'kernel': st.selectbox("Kernel", ['rbf', 'linear']),
-            'gamma': st.select_slider("Kernel coefficient (gamma)", options=['scale', 'auto', 0.1, 1, 10], value='scale')
+            'C': st.multiselect("Regularization parameter (C)", options=[0.1, 1, 10, 100], default=[0.1, 1, 10]),
+            'kernel': st.multiselect("Kernel", options=['rbf', 'linear'], default=['rbf', 'linear']),
+            'gamma': st.multiselect("Kernel coefficient (gamma)", options=['scale', 'auto', 0.1, 1, 10], default=['scale', 'auto'])
         }
         model = SVC(random_state=42)
     elif model_name == "Logistic Regression":
         param_grid = {
-            'C': st.select_slider("Regularization parameter (C)", options=[0.1, 1, 10, 100], value=1),
-            'penalty': st.selectbox("Penalty", ['l1', 'l2']),
-            'solver': st.selectbox("Solver", ['liblinear', 'saga'])
+            'C': st.multiselect("Regularization parameter (C)", options=[0.1, 1, 10, 100], default=[0.1, 1, 10]),
+            'penalty': st.multiselect("Penalty", options=['l1', 'l2'], default=['l1', 'l2']),
+            'solver': st.multiselect("Solver", options=['liblinear', 'saga'], default=['liblinear', 'saga'])
         }
         model = LogisticRegression(random_state=42)
     else:
         param_grid = {
-            'n_neighbors': st.slider("Number of neighbors", 1, 20, (1, 10)),
-            'weights': st.selectbox("Weight function", ['uniform', 'distance']),
-            'p': st.selectbox("Power parameter for Minkowski metric", [1, 2])
+            'n_neighbors': st.multiselect("Number of neighbors", options=list(range(1, 21)), default=[1, 5, 10]),
+            'weights': st.multiselect("Weight function", options=['uniform', 'distance'], default=['uniform', 'distance']),
+            'p': st.multiselect("Power parameter for Minkowski metric", options=[1, 2], default=[1, 2])
         }
         model = KNeighborsClassifier()
 
