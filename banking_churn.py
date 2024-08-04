@@ -267,23 +267,23 @@ with tabs[4]:
         model = RandomForestClassifier(random_state=42)
     elif model_name == "Support Vector Machine":
         param_grid = {
-            'C': [0.1, 1, 10, 100],
-            'kernel': ['rbf', 'linear'],
-            'gamma': ['scale', 'auto'] + [0.1, 1, 10]
+            'C': st.select_slider("Regularization parameter (C)", options=[0.1, 1, 10, 100], value=1),
+            'kernel': st.selectbox("Kernel", ['rbf', 'linear']),
+            'gamma': st.select_slider("Kernel coefficient (gamma)", options=['scale', 'auto', 0.1, 1, 10], value='scale')
         }
         model = SVC(random_state=42)
     elif model_name == "Logistic Regression":
         param_grid = {
-            'C': [0.1, 1, 10, 100],
-            'penalty': ['l1', 'l2'],
-            'solver': ['liblinear', 'saga']
+            'C': st.select_slider("Regularization parameter (C)", options=[0.1, 1, 10, 100], value=1),
+            'penalty': st.selectbox("Penalty", ['l1', 'l2']),
+            'solver': st.selectbox("Solver", ['liblinear', 'saga'])
         }
         model = LogisticRegression(random_state=42)
     else:
         param_grid = {
             'n_neighbors': st.slider("Number of neighbors", 1, 20, (1, 10)),
-            'weights': ['uniform', 'distance'],
-            'p': [1, 2]
+            'weights': st.selectbox("Weight function", ['uniform', 'distance']),
+            'p': st.selectbox("Power parameter for Minkowski metric", [1, 2])
         }
         model = KNeighborsClassifier()
 
