@@ -72,63 +72,27 @@ st.markdown("""
 st.markdown("<h1 class='main-header'>🌳 Gini Index Interactive Explorer 🌳</h1>", unsafe_allow_html=True)
 st.markdown("<p class='content-text'><strong>Developed by: Venugopal Adep</strong></p>", unsafe_allow_html=True)
 
+# Sidebar
+st.sidebar.header("Dataset Parameters")
+n_samples = st.sidebar.slider("Number of samples", min_value=50, max_value=500, value=200, step=50)
+n_features = st.sidebar.slider("Number of features", min_value=2, max_value=10, value=5, step=1)
+n_classes = st.sidebar.slider("Number of classes", min_value=2, max_value=5, value=2, step=1)
+max_depth = st.sidebar.slider("Maximum depth of the decision tree", min_value=1, max_value=10, value=3, step=1)
+
+# Generate random data
+X, y = make_classification(n_samples=n_samples, n_features=n_features, n_classes=n_classes, 
+                           n_informative=n_features, n_redundant=0, random_state=42)
+
+# Calculate Gini index for the entire dataset
+class_counts = np.bincount(y)
+class_probabilities = class_counts / n_samples
+gini_index = 1 - np.sum(class_probabilities ** 2)
+
 # Create tabs
-tab1, tab2, tab3, tab4 = st.tabs(["🔍 Gini Index Explorer", "📊 Decision Tree Visualization", "🎓 Learn More", "🧠 Quiz"])
+tab1, tab2, tab3 = st.tabs(["🎓 Learn", "🔍 Gini Index Explorer & Decision Tree", "🧠 Quiz"])
 
 with tab1:
-    st.markdown("<h2 class='tab-subheader'>Gini Index Calculation and Visualization</h2>", unsafe_allow_html=True)
-
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        st.markdown("<h3 class='content-text'>Dataset Parameters</h3>", unsafe_allow_html=True)
-        
-        # Dataset parameters
-        n_samples = st.slider("Number of samples", min_value=50, max_value=500, value=200, step=50)
-        n_features = st.slider("Number of features", min_value=2, max_value=10, value=5, step=1)
-        n_classes = st.slider("Number of classes", min_value=2, max_value=5, value=2, step=1)
-
-        # Generate random data
-        X, y = make_classification(n_samples=n_samples, n_features=n_features, n_classes=n_classes, 
-                                   n_informative=n_features, n_redundant=0, random_state=42)
-
-        # Calculate Gini index for the entire dataset
-        class_counts = np.bincount(y)
-        class_probabilities = class_counts / n_samples
-        gini_index = 1 - np.sum(class_probabilities ** 2)
-
-        st.markdown("<div class='highlight'>", unsafe_allow_html=True)
-        st.markdown(f"<h3 class='content-text'>Dataset Gini Index: {gini_index:.4f}</h3>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with col2:
-        st.markdown("<h3 class='content-text'>Class Distribution</h3>", unsafe_allow_html=True)
-        
-        class_distribution = pd.DataFrame({'Class': range(n_classes), 'Count': class_counts})
-        fig = px.bar(class_distribution, x='Class', y='Count', 
-                     title='Class Distribution in the Dataset',
-                     labels={'Count': 'Number of Samples', 'Class': 'Class Label'})
-        st.plotly_chart(fig, use_container_width=True)
-
-with tab2:
-    st.markdown("<h2 class='tab-subheader'>Decision Tree Visualization</h2>", unsafe_allow_html=True)
-    
-    max_depth = st.slider("Maximum depth of the decision tree", min_value=1, max_value=10, value=3, step=1)
-
-    # Create decision tree classifier
-    dt = DecisionTreeClassifier(criterion='gini', max_depth=max_depth, random_state=42)
-    dt.fit(X, y)
-
-    # Plot the decision tree
-    fig, ax = plt.subplots(figsize=(12, 8))
-    plot_tree(dt, filled=True, rounded=True, class_names=[f"Class {i}" for i in range(n_classes)], 
-              feature_names=[f"Feature {i}" for i in range(n_features)])
-    st.pyplot(fig)
-
-    st.markdown("<p class='content-text'>This decision tree visualization shows how the Gini index is used to make splits at each node. The Gini index values are displayed in each node, helping you understand the decision-making process.</p>", unsafe_allow_html=True)
-
-with tab3:
-    st.markdown("<h2 class='tab-subheader'>Learn More About Gini Index</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 class='tab-subheader'>Learn About Gini Index</h2>", unsafe_allow_html=True)
     
     st.markdown("""
     <p class='content-text'>
@@ -159,7 +123,38 @@ with tab3:
     </p>
     """, unsafe_allow_html=True)
 
-with tab4:
+    # Conclusion
+    st.markdown("<h2 class='tab-subheader'>Explore and Learn! 🚀</h2>", unsafe_allow_html=True)
+    st.markdown("""
+    <p class='content-text'>
+    You've explored the world of Gini Index in Decision Trees! Remember:
+
+    1. The Gini index measures the impurity of nodes in a decision tree.
+    2. It ranges from 0 (perfect purity) to 1-1/k (maximum impurity), where k is the number of classes.
+    3. Decision trees use the Gini index to find the best splits at each node.
+    4. Minimizing the Gini index helps create more accurate and efficient decision trees.
+    5. Understanding the Gini index is crucial for interpreting and optimizing decision tree models.
+
+    Keep exploring and applying these concepts to build more robust and efficient Decision Tree models!
+    </p>
+    """, unsafe_allow_html=True)
+
+with tab2:
+    st.markdown("<h2 class='tab-subheader'>Decision Tree Visualization</h2>", unsafe_allow_html=True)
+    
+    # Create decision tree classifier
+    dt = DecisionTreeClassifier(criterion='gini', max_depth=max_depth, random_state=42)
+    dt.fit(X, y)
+
+    # Plot the decision tree
+    fig, ax = plt.subplots(figsize=(12, 8))
+    plot_tree(dt, filled=True, rounded=True, class_names=[f"Class {i}" for i in range(n_classes)], 
+              feature_names=[f"Feature {i}" for i in range(n_features)])
+    st.pyplot(fig)
+
+    st.markdown("<p class='content-text'>This decision tree visualization shows how the Gini index is used to make splits at each node. The Gini index values are displayed in each node, helping you understand the decision-making process.</p>", unsafe_allow_html=True)
+
+with tab3:
     st.markdown("<h2 class='tab-subheader'>Test Your Gini Index Knowledge 🧠</h2>", unsafe_allow_html=True)
     
     questions = [
@@ -173,17 +168,6 @@ with tab4:
             ],
             "correct": 1,
             "explanation": "The Gini index measures the impurity of a node in a decision tree. It quantifies how mixed the classes are within a node."
-        },
-        {
-            "question": "What is the range of the Gini index?",
-            "options": [
-                "0 to 1",
-                "-1 to 1",
-                "0 to 0.5",
-                "0 to infinity"
-            ],
-            "correct": 2,
-            "explanation": "The Gini index ranges from 0 to 0.5 (for binary classification). For multi-class problems, it ranges from 0 to 1-1/k, where k is the number of classes."
         },
         {
             "question": "What does a Gini index of 0 indicate?",
@@ -236,38 +220,4 @@ with tab4:
         else:
             st.markdown("<p class='content-text' style='color: orange;'>You're making progress! Review the explanations and try again to improve your score. 💪</p>", unsafe_allow_html=True)
 
-# Conclusion
-st.markdown("<h2 class='tab-subheader'>Explore and Learn! 🚀</h2>", unsafe_allow_html=True)
-st.markdown("""
-<p class='content-text'>
-You've explored the world of Gini Index in Decision Trees! Remember:
 
-1. The Gini index measures the impurity of nodes in a decision tree.
-2. It ranges from 0 (perfect purity) to 1-1/k (maximum impurity), where k is the number of classes.
-3. Decision trees use the Gini index to find the best splits at each node.
-4. Minimizing the Gini index helps create more accurate and efficient decision trees.
-5. Understanding the Gini index is crucial for interpreting and optimizing decision tree models.
-
-Keep exploring and applying these concepts to build more robust and efficient Decision Tree models!
-</p>
-""", unsafe_allow_html=True)
-
-# Footer
-st.markdown("""
-<style>
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #0E1117;
-    color: #FAFAFA;
-    text-align: center;
-    padding: 10px;
-    font-size: 14px;
-}
-</style>
-<div class='footer'>
-    Created with ❤️ by Venugopal Adep | © 2023 All Rights Reserved
-</div>
-""", unsafe_allow_html=True)
