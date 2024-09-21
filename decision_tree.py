@@ -5,7 +5,7 @@ import plotly.express as px
 from sklearn.datasets import load_iris, load_wine, load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.tree import plot_tree
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -80,72 +80,50 @@ def plot_decision_tree(clf, feature_names, class_names):
     plot_tree(clf, filled=True, feature_names=feature_names, class_names=class_names, ax=ax)
     st.pyplot(fig)
 
+# Sidebar
+st.sidebar.markdown("<h3 class='content-text'>Dataset and Parameters</h3>", unsafe_allow_html=True)
+
+# Dataset selection
+dataset_options = ['Iris', 'Wine', 'Breast Cancer']
+selected_dataset = st.sidebar.selectbox("Select a dataset", dataset_options)
+
+# Load the selected dataset
+if selected_dataset == 'Iris':
+    data = load_iris()
+elif selected_dataset == 'Wine':
+    data = load_wine()
+else:
+    data = load_breast_cancer()
+
+X = data.data
+y = data.target
+feature_names = data.feature_names
+class_names = data.target_names
+
+# Hyperparameters
+max_depth = st.sidebar.slider("Maximum depth", min_value=1, max_value=10, step=1, value=3)
+min_samples_split = st.sidebar.slider("Minimum samples split", min_value=2, max_value=20, step=1, value=2)
+min_samples_leaf = st.sidebar.slider("Minimum samples leaf", min_value=1, max_value=20, step=1, value=1)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train the Decision Tree model
+clf = DecisionTreeClassifier(max_depth=max_depth, min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf)
+clf.fit(X_train, y_train)
+
+# Evaluate the model
+y_pred = clf.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred, average='weighted')
+recall = recall_score(y_test, y_pred, average='weighted')
+f1 = f1_score(y_test, y_pred, average='weighted')
+
 # Create tabs
-tab1, tab2, tab3, tab4 = st.tabs(["🔍 Decision Tree Explorer", "📊 Model Performance", "🎓 Learn More", "🧠 Quiz"])
+tab1, tab2, tab3 = st.tabs(["🎓 Learn", "🔍 Decision Tree Explorer", "🧠 Quiz"])
 
 with tab1:
-    st.markdown("<h2 class='tab-subheader'>Decision Tree Visualization and Configuration</h2>", unsafe_allow_html=True)
-
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        st.markdown("<h3 class='content-text'>Dataset and Parameters</h3>", unsafe_allow_html=True)
-        
-        # Dataset selection
-        dataset_options = ['Iris', 'Wine', 'Breast Cancer']
-        selected_dataset = st.selectbox("Select a dataset", dataset_options)
-
-        # Load the selected dataset
-        if selected_dataset == 'Iris':
-            data = load_iris()
-        elif selected_dataset == 'Wine':
-            data = load_wine()
-        else:
-            data = load_breast_cancer()
-
-        X = data.data
-        y = data.target
-        feature_names = data.feature_names
-        class_names = data.target_names
-
-        # Hyperparameters
-        max_depth = st.slider("Maximum depth", min_value=1, max_value=10, step=1, value=3)
-        min_samples_split = st.slider("Minimum samples split", min_value=2, max_value=20, step=1, value=2)
-        min_samples_leaf = st.slider("Minimum samples leaf", min_value=1, max_value=20, step=1, value=1)
-
-        # Split the data into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-        # Train the Decision Tree model
-        clf = DecisionTreeClassifier(max_depth=max_depth, min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf)
-        clf.fit(X_train, y_train)
-
-    with col2:
-        st.markdown("<h3 class='content-text'>Decision Tree Visualization</h3>", unsafe_allow_html=True)
-        plot_decision_tree(clf, feature_names, class_names)
-
-with tab2:
-    st.markdown("<h2 class='tab-subheader'>Model Performance</h2>", unsafe_allow_html=True)
-    
-    # Evaluate the model
-    y_pred = clf.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    
-    st.markdown("<div class='highlight'>", unsafe_allow_html=True)
-    st.markdown(f"<h3 class='content-text'>Test Accuracy: {accuracy:.2f}</h3>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Feature importance
-    feature_importance = clf.feature_importances_
-    feature_importance_df = pd.DataFrame({'feature': feature_names, 'importance': feature_importance})
-    feature_importance_df = feature_importance_df.sort_values('importance', ascending=False)
-
-    fig = px.bar(feature_importance_df, x='importance', y='feature', orientation='h',
-                 title='Feature Importance', labels={'importance': 'Importance', 'feature': 'Feature'})
-    st.plotly_chart(fig, use_container_width=True)
-
-with tab3:
-    st.markdown("<h2 class='tab-subheader'>Learn More About Decision Trees</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 class='tab-subheader'>Learn About Decision Trees</h2>", unsafe_allow_html=True)
     
     st.markdown("""
     <p class='content-text'>
@@ -178,7 +156,41 @@ with tab3:
     </p>
     """, unsafe_allow_html=True)
 
-with tab4:
+    # Conclusion
+    st.markdown("<h2 class='tab-subheader'>Explore and Learn! 🚀</h2>", unsafe_allow_html=True)
+    st.markdown("""
+    <p class='content-text'>
+    You've explored the world of Decision Trees! Remember:
+
+    1. Decision Trees are powerful and interpretable models for classification and regression.
+    2. They make decisions based on a series of rules learned from the input features.
+    3. The tree structure allows for easy visualization and understanding of the decision-making process.
+    4. Hyperparameters like maximum depth and minimum samples split can help control the model's complexity.
+    5. While powerful, Decision Trees can be prone to overfitting, so it's important to tune them carefully.
+
+    Keep exploring and applying these concepts in your machine learning journey!
+    </p>
+    """, unsafe_allow_html=True)
+
+with tab2:
+    st.markdown("<h2 class='tab-subheader'>Decision Tree Visualization and Configuration</h2>", unsafe_allow_html=True)
+
+    st.markdown("<h3 class='content-text'>Model Performance</h3>", unsafe_allow_html=True)
+    st.markdown(f"<p class='content-text'><strong>Accuracy:</strong> {accuracy:.2f} | <strong>Precision:</strong> {precision:.2f} | <strong>Recall:</strong> {recall:.2f} | <strong>F1-score:</strong> {f1:.2f}</p>", unsafe_allow_html=True)
+    
+    st.markdown("<h3 class='content-text'>Decision Tree Visualization</h3>", unsafe_allow_html=True)
+    plot_decision_tree(clf, feature_names, class_names)
+
+    # Feature importance
+    feature_importance = clf.feature_importances_
+    feature_importance_df = pd.DataFrame({'feature': feature_names, 'importance': feature_importance})
+    feature_importance_df = feature_importance_df.sort_values('importance', ascending=False)
+
+    fig = px.bar(feature_importance_df, x='importance', y='feature', orientation='h',
+                 title='Feature Importance', labels={'importance': 'Importance', 'feature': 'Feature'})
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab3:
     st.markdown("<h2 class='tab-subheader'>Test Your Decision Tree Knowledge 🧠</h2>", unsafe_allow_html=True)
     
     questions = [
@@ -214,17 +226,6 @@ with tab4:
             ],
             "correct": 2,
             "explanation": "A leaf node is a terminal node in the Decision Tree that has no children. It represents a final decision or prediction for the samples that reach that node."
-        },
-        {
-            "question": "Which of the following is NOT a common criterion for splitting nodes in a Decision Tree?",
-            "options": [
-                "Gini impurity",
-                "Information gain",
-                "Mean squared error",
-                "Number of samples"
-            ],
-            "correct": 3,
-            "explanation": "Gini impurity, information gain, and mean squared error are common criteria for splitting nodes. The number of samples is typically used as a stopping criterion, not a splitting criterion."
         }
     ]
 
@@ -255,38 +256,3 @@ with tab4:
         else:
             st.markdown("<p class='content-text' style='color: orange;'>You're making progress! Review the explanations and try again to improve your score. 💪</p>", unsafe_allow_html=True)
 
-# Conclusion
-st.markdown("<h2 class='tab-subheader'>Explore and Learn! 🚀</h2>", unsafe_allow_html=True)
-st.markdown("""
-<p class='content-text'>
-You've explored the world of Decision Trees! Remember:
-
-1. Decision Trees are powerful and interpretable models for classification and regression.
-2. They make decisions based on a series of rules learned from the input features.
-3. The tree structure allows for easy visualization and understanding of the decision-making process.
-4. Hyperparameters like maximum depth and minimum samples split can help control the model's complexity.
-5. While powerful, Decision Trees can be prone to overfitting, so it's important to tune them carefully.
-
-Keep exploring and applying these concepts in your machine learning journey!
-</p>
-""", unsafe_allow_html=True)
-
-# Footer
-st.markdown("""
-<style>
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #0E1117;
-    color: #FAFAFA;
-    text-align: center;
-    padding: 10px;
-    font-size: 14px;
-}
-</style>
-<div class='footer'>
-    Created with ❤️ by Venugopal Adep | © 2023 All Rights Reserved
-</div>
-""", unsafe_allow_html=True)
