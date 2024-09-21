@@ -6,13 +6,13 @@ from sklearn.datasets import make_moons, make_circles, make_classification
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import pandas as pd
 
 # Set page config
 st.set_page_config(layout="wide", page_title="Decision Tree vs Random Forest Explorer", page_icon="🌳")
 
-# Custom CSS
+# Custom CSS (unchanged)
 st.markdown("""
 <style>
     .main-header {
@@ -102,76 +102,10 @@ st.markdown("<h1 class='main-header'>🌳 Decision Tree vs Random Forest Interac
 st.markdown("<p class='content-text'><strong>Developed by: Venugopal Adep</strong></p>", unsafe_allow_html=True)
 
 # Create tabs
-tab1, tab2, tab3, tab4 = st.tabs(["🔍 Model Explorer", "📊 Performance Comparison", "🎓 Learn More", "🧠 Quiz"])
+tab1, tab2, tab3 = st.tabs(["🎓 Learn", "🔍 Model Explorer", "🧠 Quiz"])
 
 with tab1:
-    st.markdown("<h2 class='tab-subheader'>Model Configuration and Visualization</h2>", unsafe_allow_html=True)
-
-    st.markdown("<h3 class='content-text'>Decision Boundaries Visualization</h3>", unsafe_allow_html=True)
-    
-    # Plot decision boundaries
-    fig = go.Figure()
-
-    # Add scatter points for the data
-    fig.add_trace(go.Scatter(x=X[:, 0], y=X[:, 1], mode='markers', 
-                             marker=dict(color=y, colorscale='Viridis'), 
-                             name='Data Points'))
-
-    # Create mesh grid for decision boundary visualization
-    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
-    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.02), np.arange(y_min, y_max, 0.02))
-
-    # Make predictions on the mesh grid
-    Z_dt = dt.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
-    Z_rf = rf.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
-
-    # Add contour plots for decision boundaries
-    fig.add_trace(go.Contour(x=np.arange(x_min, x_max, 0.02), y=np.arange(y_min, y_max, 0.02), 
-                             z=Z_dt, name='Decision Tree', showscale=False, 
-                             colorscale='RdBu', opacity=0.5))
-    fig.add_trace(go.Contour(x=np.arange(x_min, x_max, 0.02), y=np.arange(y_min, y_max, 0.02), 
-                             z=Z_rf, name='Random Forest', showscale=False, 
-                             colorscale='RdYlBu', opacity=0.5))
-
-    fig.update_layout(title=f'Decision Boundaries - {dataset} Dataset',
-                      xaxis_title='Feature 1', yaxis_title='Feature 2')
-
-    st.plotly_chart(fig, use_container_width=True)
-
-with tab2:
-    st.markdown("<h2 class='tab-subheader'>Model Performance Comparison</h2>", unsafe_allow_html=True)
-    
-    # Calculate accuracies
-    dt_pred = dt.predict(X_test)
-    rf_pred = rf.predict(X_test)
-    dt_accuracy = accuracy_score(y_test, dt_pred)
-    rf_accuracy = accuracy_score(y_test, rf_pred)
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("<div class='highlight'>", unsafe_allow_html=True)
-        st.markdown(f"<h3 class='content-text'>Decision Tree Accuracy: {dt_accuracy:.3f}</h3>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with col2:
-        st.markdown("<div class='highlight'>", unsafe_allow_html=True)
-        st.markdown(f"<h3 class='content-text'>Random Forest Accuracy: {rf_accuracy:.3f}</h3>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    # Accuracy comparison bar chart
-    accuracy_data = pd.DataFrame({
-        'Model': ['Decision Tree', 'Random Forest'],
-        'Accuracy': [dt_accuracy, rf_accuracy]
-    })
-    fig = px.bar(accuracy_data, x='Model', y='Accuracy', 
-                 title='Model Accuracy Comparison', 
-                 color='Model', color_discrete_map={'Decision Tree': '#FF6347', 'Random Forest': '#4682B4'})
-    st.plotly_chart(fig, use_container_width=True)
-
-with tab3:
-    st.markdown("<h2 class='tab-subheader'>Learn More About Decision Trees and Random Forests</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 class='tab-subheader'>Learn About Decision Trees and Random Forests</h2>", unsafe_allow_html=True)
     
     st.markdown("""
     <p class='content-text'>
@@ -199,7 +133,75 @@ with tab3:
     </p>
     """, unsafe_allow_html=True)
 
-with tab4:
+with tab2:
+    st.markdown("<h2 class='tab-subheader'>Model Configuration and Visualization</h2>", unsafe_allow_html=True)
+
+    # Calculate metrics
+    y_pred_dt = dt.predict(X_test)
+    y_pred_rf = rf.predict(X_test)
+    
+    metrics_dt = {
+        'Accuracy': accuracy_score(y_test, y_pred_dt),
+        'Precision': precision_score(y_test, y_pred_dt),
+        'Recall': recall_score(y_test, y_pred_dt),
+        'F1 Score': f1_score(y_test, y_pred_dt)
+    }
+    
+    metrics_rf = {
+        'Accuracy': accuracy_score(y_test, y_pred_rf),
+        'Precision': precision_score(y_test, y_pred_rf),
+        'Recall': recall_score(y_test, y_pred_rf),
+        'F1 Score': f1_score(y_test, y_pred_rf)
+    }
+
+    # Display metrics side by side
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("<h3>Decision Tree Metrics</h3>", unsafe_allow_html=True)
+        for metric, value in metrics_dt.items():
+            st.write(f"{metric}: {value:.3f}")
+    
+    with col2:
+        st.markdown("<h3>Random Forest Metrics</h3>", unsafe_allow_html=True)
+        for metric, value in metrics_rf.items():
+            st.write(f"{metric}: {value:.3f}")
+
+    # Create mesh grid for decision boundary visualization
+    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
+    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.02), np.arange(y_min, y_max, 0.02))
+
+    # Make predictions on the mesh grid
+    Z_dt = dt.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+    Z_rf = rf.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+
+    # Function to create decision boundary plot
+    def create_decision_boundary_plot(Z, title):
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=X[:, 0], y=X[:, 1], mode='markers', 
+                                 marker=dict(color=y, colorscale='Viridis'), 
+                                 name='Data Points'))
+        fig.add_trace(go.Contour(x=np.arange(x_min, x_max, 0.02), y=np.arange(y_min, y_max, 0.02), 
+                                 z=Z, name='Decision Boundary', showscale=False, 
+                                 colorscale='RdBu', opacity=0.5))
+        fig.update_layout(title=title, xaxis_title='Feature 1', yaxis_title='Feature 2')
+        return fig
+
+    # Display plots side by side
+    col1, col2 = st.columns(2)
+    with col1:
+        st.plotly_chart(create_decision_boundary_plot(Z_dt, 'Decision Tree Boundaries'), use_container_width=True)
+    
+    with col2:
+        st.plotly_chart(create_decision_boundary_plot(Z_rf, 'Random Forest Boundaries'), use_container_width=True)
+
+    # Feature importance plot for Decision Tree
+    st.markdown("<h3 class='content-text'>Decision Tree Feature Importance</h3>", unsafe_allow_html=True)
+    feature_importance = pd.DataFrame({'feature': ['Feature 1', 'Feature 2'], 'importance': dt.feature_importances_})
+    fig_importance = px.bar(feature_importance, x='feature', y='importance', title='Feature Importance')
+    st.plotly_chart(fig_importance, use_container_width=True)
+
+with tab3:
     st.markdown("<h2 class='tab-subheader'>Test Your Knowledge 🧠</h2>", unsafe_allow_html=True)
     
     questions = [
@@ -235,17 +237,6 @@ with tab4:
             ],
             "correct": 1,
             "explanation": "The 'n_estimators' parameter controls the number of trees in the Random Forest."
-        },
-        {
-            "question": "Which model is generally more interpretable?",
-            "options": [
-                "Decision Tree",
-                "Random Forest",
-                "Both equally",
-                "Neither"
-            ],
-            "correct": 0,
-            "explanation": "Decision Trees are generally more interpretable than Random Forests due to their single tree structure."
         }
     ]
 
