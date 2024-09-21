@@ -67,6 +67,7 @@ st.markdown("""
 
 # Title
 st.markdown("<h1 class='main-header'>📊 Linear vs Logistic Regression Explorer 📊</h1>", unsafe_allow_html=True)
+st.write('**Developed by : Venugopal Adep**')
 
 # Functions
 def generate_data(num_points, noise_level, logistic_x_shift):
