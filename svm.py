@@ -5,12 +5,13 @@ from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from plotly.subplots import make_subplots
 
 # Set page config
 st.set_page_config(layout="wide", page_title="SVM Interactive Tool", page_icon="🤖")
 
-# Custom CSS
+# Custom CSS (unchanged)
 st.markdown("""
 <style>
     .main-header {
@@ -72,7 +73,7 @@ st.markdown("""
 st.markdown("<h1 class='main-header'>🤖 Support Vector Machines (SVM) Interactive Tool 🤖</h1>", unsafe_allow_html=True)
 st.markdown("<p class='content-text'><strong>Developed by: Venugopal Adep</strong></p>", unsafe_allow_html=True)
 
-def plot_svm(X, y, svc):
+def plot_svm(X, y, y_pred, svc):
     # Create a mesh grid for plotting
     x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
     y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
@@ -83,89 +84,72 @@ def plot_svm(X, y, svc):
     Z = svc.predict(np.c_[xx.ravel(), yy.ravel()])
     Z = Z.reshape(xx.shape)
 
-    # Create the plot
-    fig = go.Figure(data=[
-        go.Contour(x=xx[0], y=yy[:, 0], z=Z, colorscale='RdBu', showscale=False, opacity=0.8),
-        go.Scatter(x=X[:, 0], y=X[:, 1], mode='markers', marker=dict(color=y, colorscale='RdBu', size=10))
-    ])
+    # Create the plot with subplots
+    fig = make_subplots(rows=1, cols=2, column_widths=[0.7, 0.3], 
+                        specs=[[{"type": "xy"}, {"type": "table"}]])
 
-    fig.update_layout(title='Support Vector Machine Decision Boundary',
-                      xaxis_title='Feature 1',
-                      yaxis_title='Feature 2',
-                      plot_bgcolor='white',
-                      height=600,
-                      width=800,
-                      font=dict(size=14))
+    # Add decision boundary contour
+    fig.add_trace(go.Contour(
+        x=xx[0], y=yy[:, 0], z=Z,
+        colorscale=[[0, 'lightblue'], [1, 'mistyrose']],
+        opacity=0.5,
+        showscale=False
+    ), row=1, col=1)
 
-    return fig
+    # Add scatter plot for actual data points
+    colors = ['blue' if label == 0 else 'red' for label in y]
+    markers = ['circle' if pred == actual else 'x' for pred, actual in zip(y_pred, y)]
+    
+    hover_texts = []
+    for actual, pred in zip(y, y_pred):
+        if actual == 0 and pred == 0:
+            hover_texts.append("TN (BpB)")
+        elif actual == 1 and pred == 1:
+            hover_texts.append("TP (RpR)")
+        elif actual == 0 and pred == 1:
+            hover_texts.append("FP (BpR)")
+        else:
+            hover_texts.append("FN (RpB)")
+
+    for color, marker in [('blue', 'circle'), ('blue', 'x'), ('red', 'circle'), ('red', 'x')]:
+        mask = np.logical_and(np.array(colors) == color, np.array(markers) == marker)
+        fig.add_trace(go.Scatter(
+            x=X[mask, 0], y=X[mask, 1],
+            mode='markers',
+            marker=dict(color=color, symbol=marker, size=10, line=dict(width=2, color='black')),
+            name=f"{'Negative' if color == 'blue' else 'Positive'} {'(Correct)' if marker == 'circle' else '(Incorrect)'}",
+            hovertext=[text for text, m in zip(hover_texts, mask) if m],
+            hoverinfo='text'
+        ), row=1, col=1)
+
+    # Calculate TP, TN, FP, FN
+    tn, fp, fn, tp = confusion_matrix(y, y_pred).ravel()
+
+    # Add annotations
+    annotations = [
+        dict(x=X[:, 0].min(), y=X[:, 1].max(), xref="x", yref="y", text=f"TN: {tn}", showarrow=False),
+        dict(x=X[:, 0].max(), y=X[:, 1].max(), xref="x", yref="y", text=f"FP: {fp}", showarrow=False),
+        dict(x=X[:, 0].min(), y=X[:, 1].min(), xref="x", yref="y", text=f"FN: {fn}", showarrow=False),
+        dict(x=X[:, 0].max(), y=X[:, 1].min(), xref="x", yref="y", text=f"TP: {tp}", showarrow=False)
+    ]
+
+    fig.update_layout(
+        title='Support Vector Machine Decision Boundary',
+        annotations=annotations,
+        height=600,
+        width=1000
+    )
+
+    fig.update_xaxes(title_text="Feature 1", row=1, col=1)
+    fig.update_yaxes(title_text="Feature 2", row=1, col=1)
+
+    return fig, tn, fp, fn, tp
 
 # Create tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📊 SVM Visualization", "🧮 Model Training", "🎓 Learn More", "🧠 Quiz"])
+tab1, tab2, tab3 = st.tabs(["🎓 Learn", "📊 SVM Visualization & Training", "🧠 Quiz"])
 
 with tab1:
-    st.markdown("<h2 class='tab-subheader'>SVM Visualization</h2>", unsafe_allow_html=True)
-
-    # Sidebar layout
-    st.sidebar.title("Options")
-
-    # Dataset selection
-    dataset_options = ['Moons', 'Circles', 'Blobs']
-    selected_dataset = st.sidebar.selectbox("Select a dataset", dataset_options)
-
-    # Kernel selection
-    kernel_options = ['linear', 'poly', 'rbf', 'sigmoid']
-    selected_kernel = st.sidebar.selectbox("Select a kernel function", kernel_options)
-
-    # Regularization parameter (C)
-    c_value = st.sidebar.slider("Regularization parameter (C)", min_value=0.1, max_value=10.0, step=0.1, value=1.0)
-
-    # Generate the selected dataset
-    if selected_dataset == 'Moons':
-        X, y = datasets.make_moons(noise=0.3, random_state=0)
-    elif selected_dataset == 'Circles':
-        X, y = datasets.make_circles(noise=0.2, factor=0.5, random_state=0)
-    else:
-        X, y = datasets.make_blobs(n_samples=100, centers=2, random_state=0)
-
-    # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # Scale the features
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-
-    # Train the SVM model
-    svc = SVC(kernel=selected_kernel, C=c_value)
-    svc.fit(X_train_scaled, y_train)
-
-    # Plot the decision boundary
-    fig = plot_svm(X_train_scaled, y_train, svc)
-    st.plotly_chart(fig)
-
-with tab2:
-    st.markdown("<h2 class='tab-subheader'>Model Training and Evaluation</h2>", unsafe_allow_html=True)
-    
-    # Evaluate the model
-    y_pred = svc.predict(X_test_scaled)
-    accuracy = accuracy_score(y_test, y_pred)
-    st.markdown("<div class='highlight'>", unsafe_allow_html=True)
-    st.write(f"Test Accuracy: {accuracy:.2f}")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("""
-    <p class='content-text'>
-    The model's performance can be affected by:
-    - The chosen dataset
-    - The selected kernel function
-    - The regularization parameter (C)
-    
-    Try adjusting these parameters in the sidebar to see how they impact the decision boundary and model accuracy.
-    </p>
-    """, unsafe_allow_html=True)
-
-with tab3:
-    st.markdown("<h2 class='tab-subheader'>Learn More About SVM</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 class='tab-subheader'>Learn About SVM</h2>", unsafe_allow_html=True)
     
     st.markdown("""
     <p class='content-text'>
@@ -186,7 +170,82 @@ with tab3:
     </p>
     """, unsafe_allow_html=True)
 
-with tab4:
+with tab2:
+    st.markdown("<h2 class='tab-subheader'>SVM Visualization & Training</h2>", unsafe_allow_html=True)
+    
+    # Sidebar layout
+    st.sidebar.title("Options")
+    
+    # Dataset selection
+    dataset_options = ['Moons', 'Circles', 'Blobs']
+    selected_dataset = st.sidebar.selectbox("Select a dataset", dataset_options)
+    
+    # Number of points slider
+    n_samples = st.sidebar.slider("Number of points", min_value=5, max_value=100, value=10, step=5)
+    
+    # Kernel selection
+    kernel_options = ['linear', 'poly', 'rbf', 'sigmoid']
+    selected_kernel = st.sidebar.selectbox("Select a kernel function", kernel_options)
+    
+    # Regularization parameter (C)
+    c_value = st.sidebar.slider("Regularization parameter (C)", min_value=0.1, max_value=10.0, step=0.1, value=1.0)
+    
+    # Generate the selected dataset
+    if selected_dataset == 'Moons':
+        X, y = datasets.make_moons(n_samples=n_samples, noise=0.3, random_state=0)
+    elif selected_dataset == 'Circles':
+        X, y = datasets.make_circles(n_samples=n_samples, noise=0.2, factor=0.5, random_state=0)
+    else:
+        X, y = datasets.make_blobs(n_samples=n_samples, centers=2, random_state=0)
+    
+    # Scale the features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    
+    # Train the SVM model
+    svc = SVC(kernel=selected_kernel, C=c_value)
+    svc.fit(X_scaled, y)
+    
+    # Make predictions
+    y_pred = svc.predict(X_scaled)
+    
+    # Plot the decision boundary and get confusion matrix values
+    fig, tn, fp, fn, tp = plot_svm(X_scaled, y, y_pred, svc)
+    
+    # Calculate metrics
+    accuracy = (tp + tn) / (tp + tn + fp + fn)
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    
+    # Add table with calculations to the right of the plot
+    calc_table = go.Table(
+        header=dict(values=["Metric", "Formula", "Calculation", "Result"]),
+        cells=dict(values=[
+            ["Accuracy", "Precision", "Recall", "F1 Score"],
+            ["(TP + TN) / (TP + TN + FP + FN)", "TP / (TP + FP)", "TP / (TP + FN)", "2 * (Precision * Recall) / (Precision + Recall)"],
+            [f"({tp} + {tn}) / ({tp} + {tn} + {fp} + {fn})", f"{tp} / ({tp} + {fp})", f"{tp} / ({tp} + {fn})", f"2 * ({precision:.2f} * {recall:.2f}) / ({precision:.2f} + {recall:.2f})"],
+            [f"{accuracy:.2f}", f"{precision:.2f}", f"{recall:.2f}", f"{f1:.2f}"]
+        ])
+    )
+    fig.add_trace(calc_table, row=1, col=2)
+    
+    st.plotly_chart(fig)
+    
+    st.markdown("""
+    <p class='content-text'>
+    The model's performance can be affected by:
+    - The chosen dataset
+    - The number of points
+    - The selected kernel function
+    - The regularization parameter (C)
+    
+    Try adjusting these parameters in the sidebar to see how they impact the decision boundary and model metrics.
+    </p>
+    """, unsafe_allow_html=True)
+
+
+with tab3:
     st.markdown("<h2 class='tab-subheader'>Test Your SVM Knowledge 🧠</h2>", unsafe_allow_html=True)
     
     questions = [
@@ -259,22 +318,3 @@ Keep exploring and applying these concepts in your machine learning journey!
 </p>
 """, unsafe_allow_html=True)
 
-# Footer
-st.markdown("""
-<style>
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #0E1117;
-    color: #FAFAFA;
-    text-align: center;
-    padding: 10px;
-    font-size: 14px;
-}
-</style>
-<div class='footer'>
-    Created with ❤️ by Venugopal Adep | © 2023 All Rights Reserved
-</div>
-""", unsafe_allow_html=True)
