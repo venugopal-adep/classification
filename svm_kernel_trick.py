@@ -99,63 +99,15 @@ def generate_data(num_points):
     y = np.array([1 if np.linalg.norm(x) < 1 else -1 for x in X])
     return X, y
 
+# Sidebar
+st.sidebar.markdown("<h2 class='tab-subheader'>Settings</h2>", unsafe_allow_html=True)
+num_points = st.sidebar.slider('Number of data points:', 10, 100, 50, 10)
+
 # Create tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Visualization", "🧮 SVM Models", "🎓 Learn More", "🧠 Quiz"])
+tab1, tab2, tab3 = st.tabs(["🎓 Learn", "📊 Visualization", "🧠 Quiz"])
 
 with tab1:
-    st.markdown("<h2 class='tab-subheader'>Data Visualization</h2>", unsafe_allow_html=True)
-    
-    np.random.seed(0)
-    num_points = st.slider('Number of data points:', 10, 100, 50, 10)
-    test_size = st.slider('Test data size (%):', 10, 50, 20, 5)
-    
-    X, y = generate_data(num_points)
-    
-    test_size = int(num_points * test_size / 100)
-    X_train, X_test = X[:-test_size], X[-test_size:]
-    y_train, y_test = y[:-test_size], y[-test_size:]
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("<p class='content-text'>Original 2D Data:</p>", unsafe_allow_html=True)
-        fig_2d = plot_data(X, y, '2D Data Points (Not Linearly Separable)')
-        st.plotly_chart(fig_2d, use_container_width=True)
-    
-    with col2:
-        st.markdown("<p class='content-text'>Transformed 3D Data:</p>", unsafe_allow_html=True)
-        fig_3d = plot_3d_data(X, y, '3D Transformed Data Points (Linearly Separable)')
-        st.plotly_chart(fig_3d, use_container_width=True)
-
-with tab2:
-    st.markdown("<h2 class='tab-subheader'>SVM Models Comparison</h2>", unsafe_allow_html=True)
-    
-    svm_linear = SVC(kernel='linear')
-    svm_linear.fit(X_train, y_train)
-    y_pred_linear = svm_linear.predict(X_test)
-    accuracy_linear = accuracy_score(y_test, y_pred_linear)
-    
-    svm_rbf = SVC(kernel='rbf')
-    svm_rbf.fit(X_train, y_train)
-    y_pred_rbf = svm_rbf.predict(X_test)
-    accuracy_rbf = accuracy_score(y_test, y_pred_rbf)
-    
-    st.markdown("<div class='highlight'>", unsafe_allow_html=True)
-    st.markdown("<p class='content-text'><strong>Prediction Accuracy:</strong></p>", unsafe_allow_html=True)
-    st.write(f'Linear SVM Accuracy: {accuracy_linear:.2f}')
-    st.write(f'RBF Kernel SVM Accuracy: {accuracy_rbf:.2f}')
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Visualization of accuracies
-    fig = go.Figure(data=[
-        go.Bar(name='Linear SVM', x=['Accuracy'], y=[accuracy_linear]),
-        go.Bar(name='RBF Kernel SVM', x=['Accuracy'], y=[accuracy_rbf])
-    ])
-    fig.update_layout(title='SVM Models Accuracy Comparison', yaxis_title='Accuracy')
-    st.plotly_chart(fig, use_container_width=True)
-
-with tab3:
-    st.markdown("<h2 class='tab-subheader'>Learn More About SVM and Kernel Trick</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 class='tab-subheader'>Learn About SVM and Kernel Trick</h2>", unsafe_allow_html=True)
     
     st.markdown("""
     <p class='content-text'>
@@ -182,7 +134,44 @@ with tab3:
     </p>
     """, unsafe_allow_html=True)
 
-with tab4:
+with tab2:
+    st.markdown("<h2 class='tab-subheader'>Data Visualization</h2>", unsafe_allow_html=True)
+    
+    np.random.seed(0)
+    X, y = generate_data(num_points)
+    
+    X_train, X_test = X[:-20], X[-20:]
+    y_train, y_test = y[:-20], y[-20:]
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("<p class='content-text'>Original 2D Data:</p>", unsafe_allow_html=True)
+        fig_2d = plot_data(X, y, '2D Data Points (Not Linearly Separable)')
+        st.plotly_chart(fig_2d, use_container_width=True)
+    
+    with col2:
+        st.markdown("<p class='content-text'>Transformed 3D Data:</p>", unsafe_allow_html=True)
+        fig_3d = plot_3d_data(X, y, '3D Transformed Data Points (Linearly Separable)')
+        st.plotly_chart(fig_3d, use_container_width=True)
+    
+    svm_linear = SVC(kernel='linear')
+    svm_linear.fit(X_train, y_train)
+    y_pred_linear = svm_linear.predict(X_test)
+    accuracy_linear = accuracy_score(y_test, y_pred_linear)
+    
+    svm_rbf = SVC(kernel='rbf')
+    svm_rbf.fit(X_train, y_train)
+    y_pred_rbf = svm_rbf.predict(X_test)
+    accuracy_rbf = accuracy_score(y_test, y_pred_rbf)
+    
+    st.markdown("<div class='highlight'>", unsafe_allow_html=True)
+    st.markdown("<p class='content-text'><strong>Prediction Accuracy:</strong></p>", unsafe_allow_html=True)
+    st.write(f'Linear SVM Accuracy: {accuracy_linear:.2f}')
+    st.write(f'RBF Kernel SVM Accuracy: {accuracy_rbf:.2f}')
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with tab3:
     st.markdown("<h2 class='tab-subheader'>Test Your SVM Knowledge 🧠</h2>", unsafe_allow_html=True)
     
     questions = [
@@ -202,17 +191,6 @@ with tab4:
             "options": ["Linear", "Polynomial", "Radial Basis Function (RBF)", "Logarithmic"],
             "correct": 3,
             "explanation": "Linear, Polynomial, and RBF are common kernels used in SVMs. Logarithmic is not a standard kernel."
-        },
-        {
-            "question": "What does the C parameter in SVM control?",
-            "options": [
-                "The kernel function",
-                "The number of support vectors",
-                "The trade-off between margin maximization and misclassification",
-                "The dimensionality of the feature space"
-            ],
-            "correct": 2,
-            "explanation": "The C parameter in SVM controls the trade-off between having a smooth decision boundary and classifying training points correctly."
         },
         {
             "question": "In the context of SVMs, what is a support vector?",
@@ -259,9 +237,7 @@ with tab4:
                 fig.add_trace(go.Scatter(x=x, y=rbf, mode='lines', name='RBF'))
                 fig.update_layout(title="Different Kernel Functions")
                 st.plotly_chart(fig, use_container_width=True)
-            elif i == 2:  # Visualization of C parameter effect
-                st.image("https://scikit-learn.org/stable/_images/sphx_glr_plot_rbf_parameters_001.png", caption="Effect of C parameter")
-            elif i == 3:  # Visualization of support vectors
+            elif i == 2:  # Visualization of support vectors
                 st.image("https://scikit-learn.org/stable/_images/sphx_glr_plot_svm_margin_001.png", caption="Support Vectors Illustration")
         
         st.markdown("</div>", unsafe_allow_html=True)
@@ -303,14 +279,11 @@ You've explored the power of Support Vector Machines and the Kernel Trick! Remem
 2. The Kernel Trick allows SVMs to find complex decision boundaries without expensive computations.
 3. Different kernels (Linear, RBF) can lead to different model performances.
 4. Visualizing data transformation helps understand how the Kernel Trick works.
-5. The C parameter in SVM controls the trade-off between margin maximization and misclassification.
-6. Support vectors are the key data points that define the decision boundary.
+5. Support vectors are the key data points that define the decision boundary.
 
 Keep exploring and applying these concepts in your machine learning journey!
 </p>
 """, unsafe_allow_html=True)
-
-
 
 # Add references
 st.markdown("<h2 class='tab-subheader'>References</h2>", unsafe_allow_html=True)
@@ -320,24 +293,4 @@ st.markdown("""
 2. Schölkopf, B., & Smola, A. J. (2002). Learning with kernels: support vector machines, regularization, optimization, and beyond. MIT press.
 3. Scikit-learn: Machine Learning in Python, Pedregosa et al., JMLR 12, pp. 2825-2830, 2011.
 </p>
-""", unsafe_allow_html=True)
-
-# Add a footer
-st.markdown("""
-<style>
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #0E1117;
-    color: #FAFAFA;
-    text-align: center;
-    padding: 10px;
-    font-size: 14px;
-}
-</style>
-<div class='footer'>
-    Created with ❤️ by Venugopal Adep | © 2023 All Rights Reserved
-</div>
 """, unsafe_allow_html=True)
