@@ -13,6 +13,8 @@ pygame.display.set_caption("Confusion Matrix Explorer")
 
 # Colors
 BACKGROUND = (240, 240, 245)
+LIGHT_RED = (255, 200, 200)
+LIGHT_BLUE = (200, 200, 255)
 TEXT_COLOR = (50, 50, 50)
 POSITIVE_COLOR = (255, 100, 100)  # Red for positive class
 NEGATIVE_COLOR = (100, 100, 255)  # Blue for negative class
@@ -66,7 +68,7 @@ def calculate_metrics(y_true, y_pred):
         'Precision': precision,
         'Recall': recall,
         'F1-score': f1,
-        'TP': tp, 'TN': tn, 'FP': fp, 'FN': fn
+        'TP(RpR)': tp, 'TN(BpB)': tn, 'FP(BpR)': fp, 'FN(RpB)': fn
     }
 
 def train_model():
@@ -88,10 +90,10 @@ def draw_decision_boundary():
         
         for i in range(len(xx)):
             for j in range(len(yy)):
-                if Z[i][j] == 1:  # Positive class (red)
-                    pygame.draw.circle(screen, (*POSITIVE_COLOR, 30), (int(xx[i][j]), int(yy[i][j])), 2)
-                else:  # Negative class (blue)
-                    pygame.draw.circle(screen, (*NEGATIVE_COLOR, 30), (int(xx[i][j]), int(yy[i][j])), 2)
+                if Z[i][j] == 1:  # Positive class (light red)
+                    pygame.draw.circle(screen, (*LIGHT_RED, 100), (int(xx[i][j]), int(yy[i][j])), 3)
+                else:  # Negative class (light blue)
+                    pygame.draw.circle(screen, (*LIGHT_BLUE, 100), (int(xx[i][j]), int(yy[i][j])), 3)
 
 def draw_metrics():
     metrics_rect = pygame.Rect(WIDTH//2 + 10, 120, WIDTH//2 - 20, HEIGHT - 200)
@@ -101,7 +103,7 @@ def draw_metrics():
         y_offset = 10
         colors = [CYAN, GREEN, YELLOW, PURPLE]
         for i, (metric, value) in enumerate(metrics.items()):
-            if metric in ['TP', 'TN', 'FP', 'FN']:
+            if metric in ['TP(RpR)', 'TN(BpB)', 'FP(BpR)', 'FN(RpB)']:
                 continue
             pygame.draw.rect(screen, colors[i], (metrics_rect.left + 10, metrics_rect.top + y_offset, metrics_rect.width - 20, 40))
             text = subtitle_font.render(f"{metric}: {value:.4f}", True, TEXT_COLOR)
@@ -126,7 +128,7 @@ def draw_metrics():
         pred_values_text = text_font.render("Predicted Values", True, TEXT_COLOR)
         screen.blit(pred_values_text, (cm_rect.left - pred_values_text.get_width() - 10, cm_rect.top - 30))
         
-        cm_labels = [('TP', metrics['TP']), ('FP', metrics['FP']), ('FN', metrics['FN']), ('TN', metrics['TN'])]
+        cm_labels = [('TP(RpR)', metrics['TP(RpR)']), ('FP(BpR)', metrics['FP(BpR)']), ('FN(RpB)', metrics['FN(RpB)']), ('TN(BpB)', metrics['TN(BpB)'])]
         for i, (label, value) in enumerate(cm_labels):
             x = cm_rect.left + (i % 2) * (cm_rect.width//2) + cm_rect.width//4
             y = cm_rect.top + (i // 2) * (cm_rect.height//2) + cm_rect.height//4
@@ -135,9 +137,9 @@ def draw_metrics():
         
         # Calculations
         calcs = [
-            f"Accuracy = (TP + TN) / (TP + TN + FP + FN) = {metrics['Accuracy']:.4f}",
-            f"Precision = TP / (TP + FP) = {metrics['Precision']:.4f}",
-            f"Recall = TP / (TP + FN) = {metrics['Recall']:.4f}",
+            f"Accuracy = (TP(RpR) + TN(BpB)) / (TP(RpR) + TN(BpB) + FP(BpR) + FN(RpB)) = {metrics['Accuracy']:.4f}",
+            f"Precision = TP(RpR) / (TP(RpR) + FP(BpR)) = {metrics['Precision']:.4f}",
+            f"Recall = TP(RpR) / (TP(RpR) + FN(RpB)) = {metrics['Recall']:.4f}",
             f"F1-score = 2 * (Precision * Recall) / (Precision + Recall) = {metrics['F1-score']:.4f}"
         ]
         for i, calc in enumerate(calcs):
@@ -177,9 +179,9 @@ def draw():
             color = POSITIVE_COLOR if label == 1 else NEGATIVE_COLOR
             pygame.draw.circle(screen, color, (int(x), int(y)), 7)
             if label == pred:
-                text = "TP" if label == 1 else "TN"
+                text = "TP(RpR)" if label == 1 else "TN(BpB)"
             else:
-                text = "FP" if pred == 1 else "FN"
+                text = "FP(BpR)" if pred == 1 else "FN(RpB)"
             text_surf = text_font.render(text, True, TEXT_COLOR)
             screen.blit(text_surf, (int(x) + 10, int(y) - 10))
     else:
