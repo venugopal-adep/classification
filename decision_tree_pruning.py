@@ -5,7 +5,7 @@ import plotly.express as px
 from sklearn.datasets import load_iris, load_wine, load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.tree import plot_tree
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,7 +13,7 @@ import pandas as pd
 # Set page config
 st.set_page_config(layout="wide", page_title="Decision Tree Pruning Explorer", page_icon="✂️")
 
-# Custom CSS
+# Custom CSS (unchanged)
 st.markdown("""
 <style>
     .main-header {
@@ -81,9 +81,49 @@ def plot_decision_tree(clf, feature_names, class_names):
     st.pyplot(fig)
 
 # Create tabs
-tab1, tab2, tab3, tab4 = st.tabs(["🌳 Tree Pruning Explorer", "📊 Model Performance", "🎓 Learn More", "🧠 Quiz"])
+tab1, tab2, tab3 = st.tabs(["🎓 Learn", "🌳 Tree Pruning Explorer", "🧠 Quiz"])
 
 with tab1:
+    st.markdown("<h2 class='tab-subheader'>Learn About Decision Tree Pruning</h2>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <p class='content-text'>
+    Decision Tree Pruning is a technique used to simplify and optimize decision trees by removing unnecessary branches or nodes. The goal of pruning is to reduce overfitting and improve the generalization performance of the tree.
+
+    There are two main approaches to pruning:
+    1. <b>Pre-pruning</b>: Stopping the tree-growing process early based on certain criteria, such as maximum depth or minimum samples per leaf.
+    2. <b>Post-pruning</b>: Growing a full tree and then removing or collapsing branches based on their impact on validation or test set performance.
+
+    Pruning helps to find the right balance between model complexity and generalization ability. It reduces the size of the tree, making it more interpretable and less prone to overfitting.
+
+    <b>Understanding Pruning Parameters:</b>
+    - <b>Splitting criterion</b>: The function used to measure the quality of a split. Gini impurity and entropy are common criteria.
+    - <b>Maximum depth</b>: The maximum depth allowed for the Decision Tree. Limiting the depth helps to prevent overfitting.
+    - <b>Minimum samples split</b>: The minimum number of samples required to split an internal node. Higher values prevent overfitting by requiring more samples to make a split.
+    - <b>Minimum samples leaf</b>: The minimum number of samples required to be at a leaf node. Higher values create simpler trees by forcing more samples into each leaf.
+    - <b>Complexity parameter (ccp_alpha)</b>: The threshold used for post-pruning. Nodes with a cost complexity lower than this value are pruned. Higher values result in more aggressive pruning.
+
+    Experiment with different pruning parameters to observe their impact on the tree structure and performance. Finding the right balance is key to achieving a model that generalizes well to unseen data.
+    </p>
+    """, unsafe_allow_html=True)
+
+    # Conclusion
+    st.markdown("<h2 class='tab-subheader'>Explore and Learn! 🚀</h2>", unsafe_allow_html=True)
+    st.markdown("""
+    <p class='content-text'>
+    You've explored the world of Decision Tree Pruning! Remember:
+
+    1. Pruning helps reduce overfitting and improve generalization in Decision Trees.
+    2. Pre-pruning and post-pruning are two main approaches to tree pruning.
+    3. Parameters like maximum depth, minimum samples split, and ccp_alpha control the pruning process.
+    4. Experiment with different pruning parameters to find the right balance between model complexity and performance.
+    5. Visualizing the pruned tree helps in understanding the impact of different pruning strategies.
+
+    Keep exploring and applying these concepts to build more robust and efficient Decision Tree models!
+    </p>
+    """, unsafe_allow_html=True)
+
+with tab2:
     st.markdown("<h2 class='tab-subheader'>Decision Tree Pruning Visualization and Configuration</h2>", unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 2])
@@ -125,53 +165,39 @@ with tab1:
 
     with col2:
         st.markdown("<h3 class='content-text'>Pruned Decision Tree Visualization</h3>", unsafe_allow_html=True)
+        
+        # Calculate metrics
+        y_pred = clf.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, average='weighted')
+        recall = recall_score(y_test, y_pred, average='weighted')
+        f1 = f1_score(y_test, y_pred, average='weighted')
+
+        # Display metrics
+        st.markdown(f"""
+        <div class='highlight'>
+        <p class='content-text'>
+        <strong>Accuracy:</strong> {accuracy:.2f} | 
+        <strong>Precision:</strong> {precision:.2f} | 
+        <strong>Recall:</strong> {recall:.2f} | 
+        <strong>F1 Score:</strong> {f1:.2f}
+        </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Plot decision tree
         plot_decision_tree(clf, feature_names, class_names)
 
-with tab2:
-    st.markdown("<h2 class='tab-subheader'>Model Performance</h2>", unsafe_allow_html=True)
-    
-    # Evaluate the model
-    y_pred = clf.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    
-    st.markdown("<div class='highlight'>", unsafe_allow_html=True)
-    st.markdown(f"<h3 class='content-text'>Test Accuracy: {accuracy:.2f}</h3>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+        # Feature importance
+        feature_importance = clf.feature_importances_
+        feature_importance_df = pd.DataFrame({'feature': feature_names, 'importance': feature_importance})
+        feature_importance_df = feature_importance_df.sort_values('importance', ascending=False)
 
-    # Feature importance
-    feature_importance = clf.feature_importances_
-    feature_importance_df = pd.DataFrame({'feature': feature_names, 'importance': feature_importance})
-    feature_importance_df = feature_importance_df.sort_values('importance', ascending=False)
-
-    fig = px.bar(feature_importance_df, x='importance', y='feature', orientation='h',
-                 title='Feature Importance', labels={'importance': 'Importance', 'feature': 'Feature'})
-    st.plotly_chart(fig, use_container_width=True)
+        fig = px.bar(feature_importance_df, x='importance', y='feature', orientation='h',
+                     title='Feature Importance', labels={'importance': 'Importance', 'feature': 'Feature'})
+        st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
-    st.markdown("<h2 class='tab-subheader'>Learn More About Decision Tree Pruning</h2>", unsafe_allow_html=True)
-    
-    st.markdown("""
-    <p class='content-text'>
-    Decision Tree Pruning is a technique used to simplify and optimize decision trees by removing unnecessary branches or nodes. The goal of pruning is to reduce overfitting and improve the generalization performance of the tree.
-
-    There are two main approaches to pruning:
-    1. <b>Pre-pruning</b>: Stopping the tree-growing process early based on certain criteria, such as maximum depth or minimum samples per leaf.
-    2. <b>Post-pruning</b>: Growing a full tree and then removing or collapsing branches based on their impact on validation or test set performance.
-
-    Pruning helps to find the right balance between model complexity and generalization ability. It reduces the size of the tree, making it more interpretable and less prone to overfitting.
-
-    <b>Understanding Pruning Parameters:</b>
-    - <b>Splitting criterion</b>: The function used to measure the quality of a split. Gini impurity and entropy are common criteria.
-    - <b>Maximum depth</b>: The maximum depth allowed for the Decision Tree. Limiting the depth helps to prevent overfitting.
-    - <b>Minimum samples split</b>: The minimum number of samples required to split an internal node. Higher values prevent overfitting by requiring more samples to make a split.
-    - <b>Minimum samples leaf</b>: The minimum number of samples required to be at a leaf node. Higher values create simpler trees by forcing more samples into each leaf.
-    - <b>Complexity parameter (ccp_alpha)</b>: The threshold used for post-pruning. Nodes with a cost complexity lower than this value are pruned. Higher values result in more aggressive pruning.
-
-    Experiment with different pruning parameters to observe their impact on the tree structure and performance. Finding the right balance is key to achieving a model that generalizes well to unseen data.
-    </p>
-    """, unsafe_allow_html=True)
-
-with tab4:
     st.markdown("<h2 class='tab-subheader'>Test Your Decision Tree Pruning Knowledge 🧠</h2>", unsafe_allow_html=True)
     
     questions = [
@@ -207,17 +233,6 @@ with tab4:
             ],
             "correct": 2,
             "explanation": "The 'ccp_alpha' parameter controls the threshold for cost-complexity pruning. Higher values result in more aggressive pruning."
-        },
-        {
-            "question": "Which approach to pruning stops the tree-growing process early based on certain criteria?",
-            "options": [
-                "Pre-pruning",
-                "Post-pruning",
-                "Mid-pruning",
-                "Adaptive pruning"
-            ],
-            "correct": 0,
-            "explanation": "Pre-pruning stops the tree-growing process early based on certain criteria, such as maximum depth or minimum samples per leaf."
         }
     ]
 
@@ -248,38 +263,3 @@ with tab4:
         else:
             st.markdown("<p class='content-text' style='color: orange;'>You're making progress! Review the explanations and try again to improve your score. 💪</p>", unsafe_allow_html=True)
 
-# Conclusion
-st.markdown("<h2 class='tab-subheader'>Explore and Learn! 🚀</h2>", unsafe_allow_html=True)
-st.markdown("""
-<p class='content-text'>
-You've explored the world of Decision Tree Pruning! Remember:
-
-1. Pruning helps reduce overfitting and improve generalization in Decision Trees.
-2. Pre-pruning and post-pruning are two main approaches to tree pruning.
-3. Parameters like maximum depth, minimum samples split, and ccp_alpha control the pruning process.
-4. Experiment with different pruning parameters to find the right balance between model complexity and performance.
-5. Visualizing the pruned tree helps in understanding the impact of different pruning strategies.
-
-Keep exploring and applying these concepts to build more robust and efficient Decision Tree models!
-</p>
-""", unsafe_allow_html=True)
-
-# Footer
-st.markdown("""
-<style>
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #0E1117;
-    color: #FAFAFA;
-    text-align: center;
-    padding: 10px;
-    font-size: 14px;
-}
-</style>
-<div class='footer'>
-    Created with ❤️ by Venugopal Adep | © 2023 All Rights Reserved
-</div>
-""", unsafe_allow_html=True)
