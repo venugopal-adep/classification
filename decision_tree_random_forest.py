@@ -282,23 +282,3 @@ You've explored the world of Decision Trees and Random Forests! Remember:
 Keep exploring and applying these concepts to build more robust and efficient machine learning models!
 </p>
 """, unsafe_allow_html=True)
-
-# Footer
-st.markdown("""
-<style>
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: #0E1117;
-    color: #FAFAFA;
-    text-align: center;
-    padding: 10px;
-    font-size: 14px;
-}
-</style>
-<div class='footer'>
-    Created with ❤️ by Venugopal Adep | © 2023 All Rights Reserved
-</div>
-""", unsafe_allow_html=True)
